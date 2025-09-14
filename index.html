@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inquiry Form</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- EmailJS SDK via CDN -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+
+<body>
+  <!-- Floating background bubbles -->
+  <div class="bubble" style="width:80px; height:80px; left:10%; animation-duration:18s;"></div>
+  <div class="bubble" style="width:60px; height:60px; left:40%; animation-duration:22s;"></div>
+  <div class="bubble" style="width:100px; height:100px; left:70%; animation-duration:25s;"></div>
+  <div class="bubble" style="width:50px; height:50px; left:20%; animation-duration:20s;"></div>
+  <div class="bubble" style="width:90px; height:90px; left:80%; animation-duration:28s;"></div>
+
+  <div class="container">
+    <h1>Contact Us</h1>
+    <p>Please fill out the form below and we&apos;ll get back to you shortly.</p>
+
+    <!-- Inquiry Form -->
+    <form id="inquiryForm">
+      <!-- Full Name -->
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="Your Name" required>
+
+      <!-- Email (used for autoresponder confirmation) -->
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="your@email.com" required>
+
+      <!-- Subject -->
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" name="subject" placeholder="Subject" required>
+
+      <!-- Message -->
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="5" placeholder="Your message here..." required></textarea>
+
+      <!-- Submit Button -->
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Thank You Message (hidden by default) -->
+    <div id="thankYouMessage" class="hidden">
+      <div class="success-tick"></div>
+      <h2>Thank you!</h2>
+      <p>Your inquiry has been submitted successfully 🎉</p>
+      <p>We&apos;ll get back to you shortly.</p>
+    </div>
+  </div>
+
+  <script>
+  // EmailJS configuration
+  const EMAILJS_SERVICE_ID = 'service_5qkom7e';
+  const EMAILJS_TEMPLATE_ID_CLIENT = 'template_tmy39kh'; // Client Auto-Reply
+  const EMAILJS_TEMPLATE_ID_ADMIN = 'template_2na5kij';  // Admin Notification
+  const EMAILJS_PUBLIC_KEY = 'Htt-j5RInIIAah2NO';
+  const RECEIVER_EMAIL = 'barsha0730@gmail.com'; // Admin email
+
+  // Initialize EmailJS
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  const form = document.getElementById('inquiryForm');
+  const thankYouMessage = document.getElementById('thankYouMessage');
+
+  // Helper: Validate email format
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Get form values
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const subject = form.subject.value.trim();
+    const message = form.message.value.trim();
+
+    // Basic validation
+    if (!name || !email || !subject || !message) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    // Prepare template variables
+    // 👇 Client Auto-Reply
+    const templateParamsUser = {
+      to_email: email,
+      to_name: name,
+      subject: subject,
+      message: message
+    };
+
+    // 👇 Admin Notification
+    const templateParamsReceiver = {
+      to_email: RECEIVER_EMAIL,
+      to_name: "Admin",
+      email: email,   // client’s email
+      name: name,     // client’s name
+      subject: subject,
+      message: message
+    };
+
+    // Send two separate emails
+    Promise.all([
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_CLIENT, templateParamsUser, EMAILJS_PUBLIC_KEY),
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_ADMIN, templateParamsReceiver, EMAILJS_PUBLIC_KEY)
+    ])
+      .then(() => {
+        form.style.display = 'none';
+        thankYouMessage.style.display = 'block';
+      })
+      .catch(err => {
+        alert('Oops! Something went wrong. Please try again.');
+        console.error(err);
+      });
+  });
+</script>
+
+</body>
+
+</html>
